@@ -9,9 +9,13 @@ import streamlit as st
 # SET PLOTLY DEFAULT TEMPLATE
 pio.templates.default = "plotly_white"
 
-# STREAMLIT HEADER
+# STREAMLIT HEADER AND INTRODUCTION
 st.title('RFM Customer Segmentation Analysis')
-st.write("This app analyzes customer data using the RFM (Recency, Frequency, Monetary) framework.")
+st.write("""
+    This app analyzes customer data using the RFM (Recency, Frequency, and Monetary) framework.
+    Upload your CSV file containing customer purchase data to get started.
+    The file should include columns for CustomerID, PurchaseDate, OrderID, and TransactionAmount.
+""")
 
 # FILE UPLOAD
 uploaded_file = st.file_uploader("Upload your CSV file", type=['csv'])
@@ -87,6 +91,17 @@ if uploaded_file is not None:
                               title='RFM Value Segment Distribution')
     fig_segment_dist.update_layout(xaxis_title='RFM Value Segment', yaxis_title='Count', showlegend=False)
     st.plotly_chart(fig_segment_dist)
+    
+    st.write("""
+        ### Interpretation of RFM Value Segment Distribution
+        This bar chart shows the distribution of customers across three value segments:
+        - **Low-Value**: Customers with a lower RFM score, indicating less recent purchases, lower frequency, or lower spending.
+        - **Mid-Value**: Customers with average RFM scores.
+        - **High-Value**: Customers with higher RFM scores, indicating more recent, frequent, or high-value transactions.
+
+        **Decision Insight**: Focus marketing and retention efforts on High-Value customers to maintain their engagement.
+        Analyze Low-Value customers to see if any can be nurtured into higher-value segments.
+    """)
 
     # Treemap for RFM Customer Segments by Value
     segment_product_counts = data.groupby(['Value Segment', 'RFM Customer Segments']).size().reset_index(name='Count')
@@ -96,6 +111,15 @@ if uploaded_file is not None:
                                              color='Value Segment', color_discrete_sequence=px.colors.qualitative.Pastel,
                                              title='RFM Customer Segments by Value')
     st.plotly_chart(fig_treemap_segment_product)
+    
+    st.write("""
+        ### Interpretation of RFM Customer Segments Treemap
+        This treemap shows the breakdown of customer segments like **Champions**, **Potential Loyalists**, etc., within each value segment.
+        Larger areas represent more customers in that segment.
+
+        **Decision Insight**: Use this visualization to identify segments with the most potential for growth, such as **Potential Loyalists** who might become **Champions**.
+        Consider re-engaging **At Risk Customers** with targeted campaigns.
+    """)
 
     # Filter the data to include only the customers in the Champions segment
     champions_segment = data[data['RFM Customer Segments'] == 'Champions']
@@ -108,6 +132,17 @@ if uploaded_file is not None:
                           yaxis_title='RFM Value',
                           showlegend=True)
     st.plotly_chart(fig_box)
+    
+    st.write("""
+        ### Interpretation of Champions Segment RFM Values
+        This box plot shows the range and spread of Recency, Frequency, and Monetary scores within the **Champions** segment.
+        - **Recency**: Lower values suggest more recent purchases.
+        - **Frequency**: Higher values indicate more frequent purchases.
+        - **Monetary**: Higher values indicate greater spending.
+
+        **Decision Insight**: Understand which of your Champions purchase more frequently and spend the most.
+        You can use this to tailor VIP programs or personalized offers.
+    """)
 
     # Correlation Matrix of Champions
     correlation_matrix = champions_segment[['RecencyScore', 'FrequencyScore', 'MonetaryScore']].corr()
@@ -119,6 +154,16 @@ if uploaded_file is not None:
                        colorbar=dict(title='Correlation')))
     fig_heatmap.update_layout(title='Correlation Matrix of RFM Values within Champions Segment')
     st.plotly_chart(fig_heatmap)
+    
+    st.write("""
+        ### Interpretation of Correlation Matrix
+        This heatmap displays correlations between Recency, Frequency, and Monetary values within the **Champions** segment.
+        - A positive correlation means that as one value increases, the other tends to increase.
+        - A negative correlation indicates that as one value increases, the other tends to decrease.
+
+        **Decision Insight**: Use this to understand the relationship between purchase frequency and spending. 
+        For example, if Frequency and Monetary are highly correlated, focusing on increasing purchase frequency could directly boost revenue.
+    """)
 
     # Comparison of RFM Segments with grouped bar chart
     segment_scores = data.groupby('RFM Customer Segments')[['RecencyScore', 'FrequencyScore', 'MonetaryScore']].mean().reset_index()
@@ -143,6 +188,15 @@ if uploaded_file is not None:
         showlegend=True
     )
     st.plotly_chart(fig_segment_scores)
+    
+    st.write("""
+        ### Interpretation of RFM Segments Comparison
+        This bar chart compares the average Recency, Frequency, and Monetary scores across different customer segments.
+        - **Champions** tend to have low Recency scores (more recent), high Frequency, and high Monetary values.
+        - **At Risk** customers might have higher Recency (less recent) but varying Frequency and Monetary values.
+
+        **Decision Insight**: Use this chart to tailor your marketing strategies. For example, re-engaging **At Risk Customers** or providing special offers to **Potential Loyalists**.
+    """)
 
 else:
     st.write("Please upload a CSV file to analyze the RFM data.")
