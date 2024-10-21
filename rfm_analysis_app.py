@@ -36,15 +36,28 @@ if uploaded_file is not None:
     data = data.merge(frequency_data, on='CustomerID', how='left')
     data = data.merge(monetary_data, on='CustomerID', how='left')
 
-    # Define scoring criteria for each RFM value using qcut for a balanced distribution
+    # Define scoring criteria for each RFM value
     recency_scores = [5, 4, 3, 2, 1]
     frequency_scores = [1, 2, 3, 4, 5]
     monetary_scores = [1, 2, 3, 4, 5]
 
-    # Assign RFM scores using qcut for better distribution
-    data['RecencyScore'] = pd.qcut(data['Recency'], q=5, labels=recency_scores).astype(int)
-    data['FrequencyScore'] = pd.qcut(data['Frequency'], q=5, labels=frequency_scores).astype(int)
-    data['MonetaryScore'] = pd.qcut(data['MonetaryValue'], q=5, labels=monetary_scores).astype(int)
+    # Function to handle qcut with fallback to cut
+    def create_rfm_score(series, score_labels, q=5):
+        # Use qcut if possible; fallback to cut if not enough unique values
+        try:
+            n_quantiles = min(q, series.nunique())
+            if n_quantiles < q:
+                return pd.cut(series, bins=n_quantiles, labels=score_labels[:n_quantiles]).astype(int)
+            else:
+                return pd.qcut(series, q=n_quantiles, labels=score_labels[:n_quantiles]).astype(int)
+        except ValueError as e:
+            st.error(f"Error in scoring: {e}")
+            return pd.Series([0] * len(series))  # Return zero scores if there's an error
+
+    # Assign RFM scores using the helper function
+    data['RecencyScore'] = create_rfm_score(data['Recency'], recency_scores)
+    data['FrequencyScore'] = create_rfm_score(data['Frequency'], frequency_scores)
+    data['MonetaryScore'] = create_rfm_score(data['MonetaryValue'], monetary_scores)
 
     # Calculate the final RFM Score
     data['RFM_Score'] = data['RecencyScore'] + data['FrequencyScore'] + data['MonetaryScore']
