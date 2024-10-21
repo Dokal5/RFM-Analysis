@@ -10,11 +10,32 @@ import streamlit as st
 pio.templates.default = "plotly_white"
 
 # STREAMLIT HEADER AND INTRODUCTION
-st.title('RFM Customer Segmentation Analysis')
+st.title('RFM Customer Segmentation Analysis for the Existing Customers')
 st.write("""
     This app analyzes customer data using the RFM (Recency, Frequency, and Monetary) framework.
     Upload your CSV file containing customer purchase data to get started.
     The file should include columns for CustomerID, PurchaseDate, OrderID, and TransactionAmount.
+""")
+
+# Example of the required CSV format
+st.write("### Example CSV File Format")
+example_data = {
+    'CustomerID': ['C001', 'C002', 'C001', 'C003', 'C002', 'C004', 'C001', 'C003', 'C005'],
+    'PurchaseDate': ['2023-05-10', '2023-06-15', '2023-07-01', '2023-04-25', '2023-05-20', 
+                     '2023-03-30', '2023-07-15', '2023-08-10', '2023-09-01'],
+    'OrderID': ['O001', 'O002', 'O003', 'O004', 'O005', 'O006', 'O007', 'O008', 'O009'],
+    'TransactionAmount': [150.75, 200.00, 350.00, 125.50, 180.00, 275.50, 120.00, 300.00, 95.00]
+}
+example_df = pd.DataFrame(example_data)
+st.write(example_df)
+
+st.write("""
+    - **CustomerID**: Unique identifier for each customer.
+    - **PurchaseDate**: Date when the purchase was made (format: YYYY-MM-DD).
+    - **OrderID**: Unique identifier for each order, useful for counting frequency.
+    - **TransactionAmount**: Monetary value of the purchase (numeric format).
+
+    Ensure that your CSV file follows this structure for accurate analysis.
 """)
 
 # FILE UPLOAD
